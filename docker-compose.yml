@@ -1,0 +1,46 @@
+services:
+  app:
+    build: .
+    ports:
+      - "127.0.0.1:${APP_PORT:-8001}:8000"
+    env_file: .env
+    environment:
+      DB_ENGINE: postgres
+      POSTGRES_HOST: db
+      MEDIA_ROOT: /vol/web/media
+      STATIC_ROOT: /vol/web/static
+    volumes:
+      - media_data:/vol/web/media
+      - static_data:/vol/web/static
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api-auth/login/', timeout=3)"
+      interval: 10s
+      timeout: 5s
+      start_period: 15s
+      retries: 10
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB in .env}
+      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER in .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 2s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  postgres_data:
+  media_data:
+  static_data:
