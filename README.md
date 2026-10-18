@@ -39,7 +39,7 @@ Install and start Docker Desktop (or Docker Engine with the Compose plugin).
 No local Python or PostgreSQL installation is needed.
 
 ```sh
-git clone https://github.com/makar111111/airport-api.git
+git clone --branch develop https://github.com/makar111111/airport-api.git
 cd airport-api
 ```
 
