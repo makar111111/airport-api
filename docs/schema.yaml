@@ -1,0 +1,2039 @@
+openapi: 3.0.3
+info:
+  title: Airport API
+  version: 1.0.0
+  description: Flight scheduling and seat reservations. Register by email, obtain
+    a JWT, explore flights and book tickets. Staff manage the catalogue.
+paths:
+  /api/airport/airplane-types/:
+    get:
+      operationId: airport_airplane_types_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - airport
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAirplaneTypeList'
+          description: ''
+    post:
+      operationId: airport_airplane_types_create
+      tags:
+      - airport
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AirplaneTypeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AirplaneTypeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AirplaneTypeRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AirplaneType'
+          description: ''
+  /api/airport/airplane-types/{id}/:
+    get:
+      operationId: airport_airplane_types_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this airplane type.
+        required: true
+      tags:
+      - airport
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AirplaneType'
+          description: ''
+    put:
+      operationId: airport_airplane_types_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this airplane type.
+        required: true
+      tags:
+      - airport
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AirplaneTypeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AirplaneTypeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AirplaneTypeRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AirplaneType'
+          description: ''
+    patch:
+      operationId: airport_airplane_types_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this airplane type.
+        required: true
+      tags:
+      - airport
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAirplaneTypeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAirplaneTypeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAirplaneTypeRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AirplaneType'
+          description: ''
+    delete:
+      operationId: airport_airplane_types_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this airplane type.
+        required: true
+      tags:
+      - airport
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/airport/airplanes/:
+    get:
+      operationId: airport_airplanes_list
+      parameters:
+      - in: query
+        name: airplane_type
+        schema:
+          type: integer
+          minimum: 1
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - airport
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAirplaneList'
+          description: ''
+    post:
+      operationId: airport_airplanes_create
+      tags:
+      - airport
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AirplaneRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AirplaneRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AirplaneRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Airplane'
+          description: ''
+  /api/airport/airplanes/{id}/:
+    get:
+      operationId: airport_airplanes_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this airplane.
+        required: true
+      tags:
+      - airport
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Airplane'
+          description: ''
+    put:
+      operationId: airport_airplanes_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this airplane.
+        required: true
+      tags:
+      - airport
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AirplaneRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AirplaneRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AirplaneRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Airplane'
+          description: ''
+    patch:
+      operationId: airport_airplanes_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this airplane.
+        required: true
+      tags:
+      - airport
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAirplaneRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAirplaneRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAirplaneRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Airplane'
+          description: ''
+    delete:
+      operationId: airport_airplanes_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this airplane.
+        required: true
+      tags:
+      - airport
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/airport/airplanes/{id}/upload-image/:
+    post:
+      operationId: airport_airplanes_upload_image_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this airplane.
+        required: true
+      tags:
+      - airport
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AirplaneImageRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AirplaneImageRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Airplane'
+          description: ''
+  /api/airport/airports/:
+    get:
+      operationId: airport_airports_list
+      parameters:
+      - in: query
+        name: city
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 255
+      - in: query
+        name: name
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 255
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - airport
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAirportList'
+          description: ''
+    post:
+      operationId: airport_airports_create
+      tags:
+      - airport
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AirportRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AirportRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AirportRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Airport'
+          description: ''
+  /api/airport/airports/{id}/:
+    get:
+      operationId: airport_airports_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this airport.
+        required: true
+      tags:
+      - airport
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Airport'
+          description: ''
+    put:
+      operationId: airport_airports_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this airport.
+        required: true
+      tags:
+      - airport
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AirportRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AirportRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AirportRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Airport'
+          description: ''
+    patch:
+      operationId: airport_airports_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this airport.
+        required: true
+      tags:
+      - airport
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAirportRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAirportRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAirportRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Airport'
+          description: ''
+    delete:
+      operationId: airport_airports_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this airport.
+        required: true
+      tags:
+      - airport
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/airport/crew/:
+    get:
+      operationId: airport_crew_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - airport
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCrewList'
+          description: ''
+    post:
+      operationId: airport_crew_create
+      tags:
+      - airport
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CrewRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CrewRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CrewRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Crew'
+          description: ''
+  /api/airport/crew/{id}/:
+    get:
+      operationId: airport_crew_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this crew.
+        required: true
+      tags:
+      - airport
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Crew'
+          description: ''
+    put:
+      operationId: airport_crew_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this crew.
+        required: true
+      tags:
+      - airport
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CrewRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CrewRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CrewRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Crew'
+          description: ''
+    patch:
+      operationId: airport_crew_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this crew.
+        required: true
+      tags:
+      - airport
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCrewRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCrewRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCrewRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Crew'
+          description: ''
+    delete:
+      operationId: airport_crew_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this crew.
+        required: true
+      tags:
+      - airport
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/airport/flights/:
+    get:
+      operationId: airport_flights_list
+      parameters:
+      - in: query
+        name: available
+        schema:
+          type: boolean
+      - in: query
+        name: date
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: destination
+        schema:
+          type: integer
+          minimum: 1
+      - in: query
+        name: ordering
+        schema:
+          enum:
+          - departure_time
+          - -departure_time
+          type: string
+          default: departure_time
+          minLength: 1
+        description: |-
+          * `departure_time` - departure_time
+          * `-departure_time` - -departure_time
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: source
+        schema:
+          type: integer
+          minimum: 1
+      tags:
+      - airport
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedFlightListList'
+          description: ''
+    post:
+      operationId: airport_flights_create
+      tags:
+      - airport
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FlightRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FlightRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FlightRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Flight'
+          description: ''
+  /api/airport/flights/{id}/:
+    get:
+      operationId: airport_flights_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this flight.
+        required: true
+      tags:
+      - airport
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlightDetail'
+          description: ''
+    put:
+      operationId: airport_flights_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this flight.
+        required: true
+      tags:
+      - airport
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FlightRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FlightRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FlightRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Flight'
+          description: ''
+    patch:
+      operationId: airport_flights_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this flight.
+        required: true
+      tags:
+      - airport
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedFlightRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedFlightRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedFlightRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Flight'
+          description: ''
+    delete:
+      operationId: airport_flights_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this flight.
+        required: true
+      tags:
+      - airport
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/airport/orders/:
+    get:
+      operationId: airport_orders_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - airport
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedOrderReadList'
+          description: ''
+    post:
+      operationId: airport_orders_create
+      tags:
+      - airport
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OrderCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OrderCreateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderRead'
+          description: ''
+  /api/airport/orders/{id}/:
+    get:
+      operationId: airport_orders_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this order.
+        required: true
+      tags:
+      - airport
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderRead'
+          description: ''
+  /api/airport/routes/:
+    get:
+      operationId: airport_routes_list
+      parameters:
+      - in: query
+        name: destination
+        schema:
+          type: integer
+          minimum: 1
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: source
+        schema:
+          type: integer
+          minimum: 1
+      tags:
+      - airport
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedRouteReadList'
+          description: ''
+    post:
+      operationId: airport_routes_create
+      tags:
+      - airport
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RouteRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RouteRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RouteRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Route'
+          description: ''
+  /api/airport/routes/{id}/:
+    get:
+      operationId: airport_routes_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this route.
+        required: true
+      tags:
+      - airport
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RouteRead'
+          description: ''
+    put:
+      operationId: airport_routes_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this route.
+        required: true
+      tags:
+      - airport
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RouteRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RouteRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RouteRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Route'
+          description: ''
+    patch:
+      operationId: airport_routes_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this route.
+        required: true
+      tags:
+      - airport
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedRouteRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedRouteRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedRouteRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Route'
+          description: ''
+    delete:
+      operationId: airport_routes_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this route.
+        required: true
+      tags:
+      - airport
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/user/me/:
+    get:
+      operationId: user_me_retrieve
+      tags:
+      - user
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    patch:
+      operationId: user_me_partial_update
+      tags:
+      - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUserRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUserRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUserRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/user/register/:
+    post:
+      operationId: user_register_create
+      tags:
+      - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/user/token/:
+    post:
+      operationId: user_token_create
+      description: |-
+        Takes a set of user credentials and returns an access and refresh JSON web
+        token pair to prove the authentication of those credentials.
+      tags:
+      - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailTokenObtainPairRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/EmailTokenObtainPairRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EmailTokenObtainPairRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenPairResponse'
+          description: ''
+  /api/user/token/refresh/:
+    post:
+      operationId: user_token_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /api/user/token/verify/:
+    post:
+      operationId: user_token_verify_create
+      description: |-
+        Takes a token and indicates if it is valid.  This view provides no
+        information about a token's fitness for a particular use.
+      tags:
+      - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenVerifyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenVerifyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenVerifyRequest'
+        required: true
+      responses:
+        '200':
+          description: No response body
+components:
+  schemas:
+    Airplane:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        rows:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 1
+          format: int64
+        seats_in_row:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 1
+          format: int64
+        capacity:
+          type: integer
+          readOnly: true
+        airplane_type:
+          type: integer
+        airplane_type_name:
+          type: string
+          readOnly: true
+        image:
+          type: string
+          format: uri
+          nullable: true
+          readOnly: true
+      required:
+      - airplane_type
+      - airplane_type_name
+      - capacity
+      - id
+      - image
+      - name
+      - rows
+      - seats_in_row
+    AirplaneImageRequest:
+      type: object
+      properties:
+        image:
+          type: string
+          format: binary
+      required:
+      - image
+    AirplaneRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        rows:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 1
+          format: int64
+        seats_in_row:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 1
+          format: int64
+        airplane_type:
+          type: integer
+      required:
+      - airplane_type
+      - name
+      - rows
+      - seats_in_row
+    AirplaneType:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+      required:
+      - id
+      - name
+    AirplaneTypeRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+      required:
+      - name
+    Airport:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        closest_big_city:
+          type: string
+          maxLength: 255
+      required:
+      - closest_big_city
+      - id
+      - name
+    AirportRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        closest_big_city:
+          type: string
+          minLength: 1
+          maxLength: 255
+      required:
+      - closest_big_city
+      - name
+    Crew:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        first_name:
+          type: string
+          maxLength: 255
+        last_name:
+          type: string
+          maxLength: 255
+        full_name:
+          type: string
+          readOnly: true
+      required:
+      - first_name
+      - full_name
+      - id
+      - last_name
+    CrewRequest:
+      type: object
+      properties:
+        first_name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        last_name:
+          type: string
+          minLength: 1
+          maxLength: 255
+      required:
+      - first_name
+      - last_name
+    EmailTokenObtainPairRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          writeOnly: true
+          minLength: 1
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - email
+      - password
+    Flight:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        route:
+          type: integer
+        airplane:
+          type: integer
+        crew:
+          type: array
+          items:
+            type: integer
+        departure_time:
+          type: string
+          format: date-time
+        arrival_time:
+          type: string
+          format: date-time
+      required:
+      - airplane
+      - arrival_time
+      - departure_time
+      - id
+      - route
+    FlightDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        route:
+          allOf:
+          - $ref: '#/components/schemas/RouteRead'
+          readOnly: true
+        airplane:
+          allOf:
+          - $ref: '#/components/schemas/Airplane'
+          readOnly: true
+        departure_time:
+          type: string
+          format: date-time
+        arrival_time:
+          type: string
+          format: date-time
+        capacity:
+          type: integer
+          readOnly: true
+        tickets_available:
+          type: integer
+          readOnly: true
+        crew:
+          type: array
+          items:
+            $ref: '#/components/schemas/Crew'
+          readOnly: true
+        taken_places:
+          type: array
+          items:
+            $ref: '#/components/schemas/Seat'
+          readOnly: true
+      required:
+      - airplane
+      - arrival_time
+      - capacity
+      - crew
+      - departure_time
+      - id
+      - route
+      - taken_places
+      - tickets_available
+    FlightList:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        route:
+          allOf:
+          - $ref: '#/components/schemas/RouteRead'
+          readOnly: true
+        airplane:
+          type: string
+          readOnly: true
+        departure_time:
+          type: string
+          format: date-time
+        arrival_time:
+          type: string
+          format: date-time
+        capacity:
+          type: integer
+          readOnly: true
+        tickets_available:
+          type: integer
+          readOnly: true
+      required:
+      - airplane
+      - arrival_time
+      - capacity
+      - departure_time
+      - id
+      - route
+      - tickets_available
+    FlightRequest:
+      type: object
+      properties:
+        route:
+          type: integer
+        airplane:
+          type: integer
+        crew:
+          type: array
+          items:
+            type: integer
+        departure_time:
+          type: string
+          format: date-time
+        arrival_time:
+          type: string
+          format: date-time
+      required:
+      - airplane
+      - arrival_time
+      - departure_time
+      - route
+    FlightSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        route:
+          allOf:
+          - $ref: '#/components/schemas/RouteRead'
+          readOnly: true
+        airplane:
+          type: string
+          readOnly: true
+        departure_time:
+          type: string
+          format: date-time
+        arrival_time:
+          type: string
+          format: date-time
+      required:
+      - airplane
+      - arrival_time
+      - departure_time
+      - id
+      - route
+    OrderCreateRequest:
+      type: object
+      properties:
+        tickets:
+          type: array
+          items:
+            $ref: '#/components/schemas/TicketRequestRequest'
+      required:
+      - tickets
+    OrderRead:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        tickets:
+          type: array
+          items:
+            $ref: '#/components/schemas/TicketRead'
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - tickets
+    PaginatedAirplaneList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Airplane'
+    PaginatedAirplaneTypeList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AirplaneType'
+    PaginatedAirportList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Airport'
+    PaginatedCrewList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Crew'
+    PaginatedFlightListList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/FlightList'
+    PaginatedOrderReadList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderRead'
+    PaginatedRouteReadList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/RouteRead'
+    PatchedAirplaneRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        rows:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 1
+          format: int64
+        seats_in_row:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 1
+          format: int64
+        airplane_type:
+          type: integer
+    PatchedAirplaneTypeRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+    PatchedAirportRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        closest_big_city:
+          type: string
+          minLength: 1
+          maxLength: 255
+    PatchedCrewRequest:
+      type: object
+      properties:
+        first_name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        last_name:
+          type: string
+          minLength: 1
+          maxLength: 255
+    PatchedFlightRequest:
+      type: object
+      properties:
+        route:
+          type: integer
+        airplane:
+          type: integer
+        crew:
+          type: array
+          items:
+            type: integer
+        departure_time:
+          type: string
+          format: date-time
+        arrival_time:
+          type: string
+          format: date-time
+    PatchedRouteRequest:
+      type: object
+      properties:
+        source:
+          type: integer
+        destination:
+          type: integer
+        distance:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 1
+          format: int64
+    PatchedUserRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+    Route:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        source:
+          type: integer
+        destination:
+          type: integer
+        distance:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 1
+          format: int64
+      required:
+      - destination
+      - distance
+      - id
+      - source
+    RouteRead:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        source:
+          allOf:
+          - $ref: '#/components/schemas/Airport'
+          readOnly: true
+        destination:
+          allOf:
+          - $ref: '#/components/schemas/Airport'
+          readOnly: true
+        distance:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 1
+          format: int64
+      required:
+      - destination
+      - distance
+      - id
+      - source
+    RouteRequest:
+      type: object
+      properties:
+        source:
+          type: integer
+        destination:
+          type: integer
+        distance:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 1
+          format: int64
+      required:
+      - destination
+      - distance
+      - source
+    Seat:
+      type: object
+      properties:
+        row:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 1
+          format: int64
+        seat:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 1
+          format: int64
+      required:
+      - row
+      - seat
+    TicketRead:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        row:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 1
+          format: int64
+        seat:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 1
+          format: int64
+        flight:
+          allOf:
+          - $ref: '#/components/schemas/FlightSummary'
+          readOnly: true
+      required:
+      - flight
+      - id
+      - row
+      - seat
+    TicketRequestRequest:
+      type: object
+      properties:
+        flight:
+          type: integer
+        row:
+          type: integer
+          minimum: 1
+        seat:
+          type: integer
+          minimum: 1
+      required:
+      - flight
+      - row
+      - seat
+    TokenPairResponse:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+          readOnly: true
+      required:
+      - access
+      - refresh
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+      required:
+      - access
+    TokenRefreshRequest:
+      type: object
+      properties:
+        refresh:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - refresh
+    TokenVerifyRequest:
+      type: object
+      properties:
+        token:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - token
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        email:
+          type: string
+          format: email
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        is_staff:
+          type: boolean
+          readOnly: true
+          title: Staff status
+          description: Designates whether the user can log into this admin site.
+      required:
+      - email
+      - id
+      - is_staff
+    UserRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - email
+      - password
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
