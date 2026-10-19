@@ -1,25 +1,71 @@
 import uuid
 from datetime import datetime
-from pathlib import Path
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
+from django.db.models.fields.files import ImageFieldFile
 from django.utils import timezone
+
+from airport.validators import (
+    airplane_image_extension,
+    validate_airplane_image,
+)
+
+
+def _trim_required_names(instance, field_names):
+    errors = {}
+    for field in field_names:
+        value = getattr(instance, field)
+        if isinstance(value, str):
+            value = value.strip()
+            setattr(instance, field, value)
+            if not value:
+                errors[field] = "This field cannot be blank."
+    if errors:
+        raise ValidationError(errors)
 
 
 def airplane_image_file_path(instance, filename):
-    extension = Path(filename).suffix.lower()
+    extension = airplane_image_extension(instance.image)
     return f"uploads/airplanes/{uuid.uuid4()}{extension}"
 
 
+class AirplaneImageFieldFile(ImageFieldFile):
+    def save(self, name, content, save=True):
+        # Direct image.save() and bulk_create() also pass through this method.
+        validate_airplane_image(content)
+        self.file = content
+        self._committed = False
+        setattr(self.instance, self.field.attname, self)
+        return super().save(name, content, save=save)
+
+
+class AirplaneImageField(models.ImageField):
+    attr_class = AirplaneImageFieldFile
+
+
 class Airport(models.Model):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, unique=True)
     closest_big_city = models.CharField(max_length=255)
 
     class Meta:
         ordering = ["name", "id"]
+        constraints = [
+            models.CheckConstraint(
+                condition=~models.Q(name__regex=r"^\s*$"),
+                name="airport_name_not_blank",
+            ),
+        ]
+
+    def clean(self):
+        super().clean()
+        _trim_required_names(self, ("name",))
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        return super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name
@@ -37,6 +83,9 @@ class Route(models.Model):
     class Meta:
         ordering = ["source__name", "destination__name", "id"]
         constraints = [
+            models.UniqueConstraint(
+                fields=["source", "destination"], name="unique_route_airports",
+            ),
             models.CheckConstraint(
                 condition=models.Q(distance__gt=0),
                 name="route_distance_positive",
@@ -69,6 +118,24 @@ class Crew(models.Model):
     class Meta:
         ordering = ["last_name", "first_name", "id"]
         verbose_name_plural = "crew"
+        constraints = [
+            models.CheckConstraint(
+                condition=~models.Q(first_name__regex=r"^\s*$"),
+                name="crew_first_name_not_blank",
+            ),
+            models.CheckConstraint(
+                condition=~models.Q(last_name__regex=r"^\s*$"),
+                name="crew_last_name_not_blank",
+            ),
+        ]
+
+    def clean(self):
+        super().clean()
+        _trim_required_names(self, ("first_name", "last_name"))
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        return super().save(*args, **kwargs)
 
     @property
     def full_name(self):
@@ -97,7 +164,10 @@ class Airplane(models.Model):
     airplane_type = models.ForeignKey(
         AirplaneType, on_delete=models.PROTECT, related_name="airplanes"
     )
-    image = models.ImageField(upload_to=airplane_image_file_path, blank=True)
+    image = AirplaneImageField(
+        upload_to=airplane_image_file_path, blank=True,
+        validators=[validate_airplane_image],
+    )
 
     class Meta:
         ordering = ["name", "id"]
@@ -114,6 +184,11 @@ class Airplane(models.Model):
     @property
     def capacity(self):
         return self.rows * self.seats_in_row
+
+    def save(self, *args, **kwargs):
+        if self.image and not self.image._committed:
+            validate_airplane_image(self.image)
+        return super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name
@@ -166,7 +241,7 @@ class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name="orders",
     )
 

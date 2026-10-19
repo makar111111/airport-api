@@ -9,6 +9,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
 
+from airport.db_errors import is_reference_conflict
 from airport.filters import (
     AirplaneFilterSerializer,
     AirportFilterSerializer,
@@ -52,17 +53,37 @@ class CatalogueViewSet(viewsets.ModelViewSet):
                     type(instance).objects.select_for_update(), pk=instance.pk
                 )
                 locked.delete()
-        except (ProtectedError, IntegrityError) as error:
+        except ProtectedError as error:
+            raise ValidationError({
+                "detail": "This object is referenced and cannot be deleted."
+            }) from error
+        except IntegrityError as error:
+            if not is_reference_conflict(error):
+                raise
             raise ValidationError({
                 "detail": "This object is referenced and cannot be deleted."
             }) from error
 
     def validated_filters(self, serializer_class):
+        """Accept one value per filter; ignore unrelated query parameters."""
+        serializer = serializer_class()
+        query_params = self.request.query_params
+        repeated = {
+            field: ["Provide this filter parameter only once."]
+            for field in serializer.fields
+            if len(query_params.getlist(field)) > 1
+        }
+        if repeated:
+            raise ValidationError(repeated)
+
         # A plain dict preserves an omitted boolean. DRF treats QueryDict as
         # HTML form data and otherwise turns an omitted checkbox into False.
-        serializer = serializer_class(
-            data=dict(self.request.query_params.items())
-        )
+        values = {
+            field: query_params.getlist(field)[0]
+            for field in serializer.fields
+            if field in query_params
+        }
+        serializer = serializer_class(data=values)
         serializer.is_valid(raise_exception=True)
         return serializer.validated_data
 

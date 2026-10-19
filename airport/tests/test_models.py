@@ -1,13 +1,16 @@
+import io
 import re
 from datetime import timedelta
 
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import IntegrityError, transaction
 from django.db.models.deletion import ProtectedError
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
+from PIL import Image
 
 from airport.models import (
     Airplane,
@@ -120,6 +123,11 @@ class AirportModelTests(TestCase):
         self.assertFalse(self.airplane.image)
 
     def test_image_names_are_unique_and_ignore_original_name(self):
+        stream = io.BytesIO()
+        Image.new("RGB", (10, 10), "blue").save(stream, format="JPEG")
+        self.airplane.image = SimpleUploadedFile(
+            "my-plane.JPG", stream.getvalue(), content_type="image/jpeg"
+        )
         first = airplane_image_file_path(self.airplane, "../../my-plane.JPG")
         second = airplane_image_file_path(self.airplane, "../../my-plane.JPG")
         self.assertNotEqual(first, second)

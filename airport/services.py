@@ -4,6 +4,7 @@ from django.db import IntegrityError, transaction
 from django.utils import timezone
 from rest_framework.exceptions import NotFound, ValidationError
 
+from airport.db_errors import is_airplane_overlap, is_seat_conflict
 from airport.models import Airplane, Crew, Flight, Order, Route, Ticket
 
 
@@ -44,7 +45,15 @@ def reserve_order(*, user, tickets):
     This also serializes seat checks with airplane capacity changes. PostgreSQL
     enforces row locking; SQLite is suitable only for local single-user demos.
     """
-    flight_ids = sorted({ticket["flight"].pk for ticket in tickets})
+    requested = set()
+    for ticket in tickets:
+        place = (ticket["flight"].pk, ticket["row"], ticket["seat"])
+        if place in requested:
+            raise ValidationError({
+                "tickets": "The same seat was requested more than once."
+            })
+        requested.add(place)
+    flight_ids = sorted({place[0] for place in requested})
     for _ in range(3):
         snapshot = _flight_snapshot(flight_ids)
         try:
@@ -74,7 +83,6 @@ def reserve_order(*, user, tickets):
                         flight_id__in=flight_ids
                     ).values_list("flight_id", "row", "seat")
                 )
-                requested = set()
                 now = timezone.now()
                 for ticket in tickets:
                     flight = flights[ticket["flight"].pk]
@@ -91,11 +99,10 @@ def reserve_order(*, user, tickets):
                             "tickets": "Seat is outside the seating plan."
                         })
                     place = (flight.pk, ticket["row"], ticket["seat"])
-                    if place in requested or place in taken:
+                    if place in taken:
                         raise ValidationError({
                             "tickets": "A requested seat is already reserved."
                         })
-                    requested.add(place)
                 order = Order.objects.create(user=user)
                 Ticket.objects.bulk_create([
                     Ticket(
@@ -108,6 +115,8 @@ def reserve_order(*, user, tickets):
             continue
         except IntegrityError as error:
             # Catch outside atomic after the failed transaction rolls back.
+            if not is_seat_conflict(error):
+                raise
             raise ValidationError({
                 "tickets": "A requested seat is no longer available."
             }) from error
@@ -189,6 +198,12 @@ def save_flight(*, instance=None, data):
                 return flight
         except _FlightChanged:
             continue
+        except IntegrityError as error:
+            if not is_airplane_overlap(error):
+                raise
+            raise ValidationError({
+                "airplane": "Airplane is already assigned during this time."
+            }) from error
     raise ValidationError({"detail": "Flight changed; retry your update."})
 
 
@@ -237,15 +252,17 @@ def validate_flight_schedule(
 def update_airplane(*, instance, data):
     with transaction.atomic():
         airplane = Airplane.objects.select_for_update().get(pk=instance.pk)
-        changed_capacity = any(
+        changed_seating_plan = any(
             field in data and data[field] != getattr(airplane, field)
-            for field in ("rows", "seats_in_row")
+            for field in ("rows", "seats_in_row", "airplane_type")
         )
-        if changed_capacity and Ticket.objects.filter(
+        if changed_seating_plan and Ticket.objects.filter(
             flight__airplane=airplane
         ).exists():
             raise ValidationError({
-                "detail": "Cannot change a booked airplane's seating plan."
+                "detail": (
+                    "Cannot change a booked airplane's type or seating plan."
+                )
             })
         for field, value in data.items():
             setattr(airplane, field, value)

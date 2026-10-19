@@ -12,6 +12,7 @@ from airport.models import (
     Route,
     Ticket,
 )
+from airport.validators import AirplaneImageFormField
 
 
 class RouteAdminForm(forms.ModelForm):
@@ -36,6 +37,8 @@ class RouteAdminForm(forms.ModelForm):
 
 
 class AirplaneAdminForm(forms.ModelForm):
+    image = AirplaneImageFormField(required=False)
+
     class Meta:
         model = Airplane
         fields = "__all__"
@@ -48,10 +51,11 @@ class AirplaneAdminForm(forms.ModelForm):
             )
             if current.flights.filter(tickets__isnull=False).exists() and any(
                 field in data and data[field] != getattr(current, field)
-                for field in ("rows", "seats_in_row")
+                for field in ("rows", "seats_in_row", "airplane_type")
             ):
                 raise forms.ValidationError(
-                    "Cannot change the seating plan of a booked airplane."
+                    "Cannot change the seating plan or type "
+                    "of a booked airplane."
                 )
         return data
 
@@ -167,7 +171,7 @@ class AirplaneAdmin(admin.ModelAdmin):
 
     def get_readonly_fields(self, request, obj=None):
         if obj and obj.flights.filter(tickets__isnull=False).exists():
-            return ("rows", "seats_in_row")
+            return ("rows", "seats_in_row", "airplane_type")
         return ()
 
 

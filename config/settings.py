@@ -2,6 +2,7 @@ import os
 from datetime import timedelta
 from pathlib import Path
 
+from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -56,7 +57,8 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 ASGI_APPLICATION = "config.asgi.application"
 
-if os.getenv("DB_ENGINE", "sqlite") == "postgres":
+DB_ENGINE = os.getenv("DB_ENGINE", "postgres")
+if DB_ENGINE == "postgres":
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",
@@ -68,13 +70,20 @@ if os.getenv("DB_ENGINE", "sqlite") == "postgres":
             "OPTIONS": {"connect_timeout": 5},
         }
     }
-else:
+elif DB_ENGINE == "sqlite":
+    if not DEBUG:
+        raise ImproperlyConfigured(
+            "SQLite is restricted to explicit development with "
+            "DJANGO_DEBUG=True. Use PostgreSQL for deployment."
+        )
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
             "NAME": BASE_DIR / "db.sqlite3",
         }
     }
+else:
+    raise ImproperlyConfigured("DB_ENGINE must be 'postgres' or 'sqlite'.")
 
 AUTH_USER_MODEL = "user.User"
 AUTH_PASSWORD_VALIDATORS = [
@@ -105,6 +114,7 @@ STATIC_ROOT = Path(os.getenv("STATIC_ROOT", BASE_DIR / "staticfiles"))
 MEDIA_URL = "/media/"
 MEDIA_ROOT = Path(os.getenv("MEDIA_ROOT", BASE_DIR / "media"))
 DATA_UPLOAD_MAX_MEMORY_SIZE = 6 * 1024 * 1024
+MAX_TICKETS_PER_ORDER = 100
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SESSION_COOKIE_HTTPONLY = True
 X_FRAME_OPTIONS = "DENY"

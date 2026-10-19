@@ -1,3 +1,6 @@
+from django.conf import settings
+from django.core.validators import MaxLengthValidator, MinLengthValidator
+from django.utils import timezone
 from rest_framework import serializers
 
 from airport.models import (
@@ -16,6 +19,7 @@ from airport.services import (
     update_airplane,
     update_route,
 )
+from airport.validators import AirplaneImageFormField
 
 
 class AirportSerializer(serializers.ModelSerializer):
@@ -82,15 +86,16 @@ class AirplaneSerializer(serializers.ModelSerializer):
 
 
 class AirplaneImageSerializer(serializers.ModelSerializer):
+    image = serializers.ImageField(
+        required=True, allow_empty_file=False,
+        _DjangoImageField=AirplaneImageFormField,
+        help_text="Image content is validated; maximum file size is 5 MiB.",
+    )
+
     class Meta:
         model = Airplane
         fields = ["id", "image"]
         extra_kwargs = {"image": {"required": True, "allow_empty_file": False}}
-
-    def validate_image(self, image):
-        if image.size > 5 * 1024 * 1024:
-            raise serializers.ValidationError("Image must be at most 5 MiB.")
-        return image
 
     def update(self, instance, validated_data):
         return update_airplane(instance=instance, data=validated_data)
@@ -150,9 +155,26 @@ class FlightDetailSerializer(FlightListSerializer):
 
 
 class TicketRequestSerializer(serializers.Serializer):
-    flight = serializers.PrimaryKeyRelatedField(queryset=Flight.objects.all())
+    flight = serializers.PrimaryKeyRelatedField(
+        queryset=Flight.objects.select_related("airplane")
+    )
     row = serializers.IntegerField(min_value=1)
     seat = serializers.IntegerField(min_value=1)
+
+    def validate(self, attrs):
+        flight = attrs["flight"]
+        errors = {}
+        if flight.departure_time <= timezone.now():
+            errors["flight"] = "Cannot book a departed flight."
+        for field, maximum in (
+            ("row", flight.airplane.rows),
+            ("seat", flight.airplane.seats_in_row),
+        ):
+            if attrs[field] > maximum:
+                errors[field] = f"Must be between 1 and {maximum}."
+        if errors:
+            raise serializers.ValidationError(errors)
+        return attrs
 
 
 class TicketReadSerializer(serializers.ModelSerializer):
@@ -173,8 +195,20 @@ class OrderReadSerializer(serializers.ModelSerializer):
 
 class OrderCreateSerializer(serializers.ModelSerializer):
     tickets = TicketRequestSerializer(
-        many=True, allow_empty=False, max_length=100
+        many=True, allow_empty=False
     )
+
+    def get_fields(self):
+        fields = super().get_fields()
+        limit = settings.MAX_TICKETS_PER_ORDER
+        fields["tickets"].max_length = limit
+        fields["tickets"].validators.extend([
+            MinLengthValidator(1), MaxLengthValidator(limit),
+        ])
+        fields["tickets"].help_text = (
+            f"Between 1 and {limit} tickets per order, including staff orders."
+        )
+        return fields
 
     class Meta:
         model = Order
