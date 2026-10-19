@@ -166,6 +166,8 @@ paths:
         schema:
           type: integer
           minimum: 1
+        description: Airplane type ID. Provide one value; repeated parameters return
+          HTTP 400.
       - name: page
         required: false
         in: query
@@ -355,12 +357,16 @@ paths:
           type: string
           minLength: 1
           maxLength: 255
+        description: Case-insensitive nearest city match. Provide one value; repeated
+          parameters return HTTP 400.
       - in: query
         name: name
         schema:
           type: string
           minLength: 1
           maxLength: 255
+        description: Case-insensitive airport name match. Provide one value; repeated
+          parameters return HTTP 400.
       - name: page
         required: false
         in: query
@@ -669,16 +675,23 @@ paths:
         name: available
         schema:
           type: boolean
+        description: true selects flights with free seats; false selects sold-out
+          flights. Omit to include both. Provide one value; repeated parameters return
+          HTTP 400.
       - in: query
         name: date
         schema:
           type: string
           format: date
+        description: UTC departure date (YYYY-MM-DD). Provide one value; repeated
+          parameters return HTTP 400.
       - in: query
         name: destination
         schema:
           type: integer
           minimum: 1
+        description: Destination airport ID. Provide one value; repeated parameters
+          return HTTP 400.
       - in: query
         name: ordering
         schema:
@@ -689,6 +702,8 @@ paths:
           default: departure_time
           minLength: 1
         description: |-
+          Departure time ascending or descending; equal departure times always use ascending IDs. Provide one value; repeated parameters return HTTP 400.
+
           * `departure_time` - departure_time
           * `-departure_time` - -departure_time
       - name: page
@@ -702,6 +717,8 @@ paths:
         schema:
           type: integer
           minimum: 1
+        description: Source airport ID. Provide one value; repeated parameters return
+          HTTP 400.
       tags:
       - airport
       security:
@@ -923,6 +940,8 @@ paths:
         schema:
           type: integer
           minimum: 1
+        description: Destination airport ID. Provide one value; repeated parameters
+          return HTTP 400.
       - name: page
         required: false
         in: query
@@ -934,6 +953,8 @@ paths:
         schema:
           type: integer
           minimum: 1
+        description: Source airport ID. Provide one value; repeated parameters return
+          HTTP 400.
       tags:
       - airport
       security:
@@ -1270,6 +1291,7 @@ components:
         image:
           type: string
           format: binary
+          description: Image content is validated; maximum file size is 5 MiB.
       required:
       - image
     AirplaneRequest:
@@ -1554,6 +1576,9 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/TicketRequestRequest'
+          description: Between 1 and 100 tickets per order, including staff orders.
+          minItems: 1
+          maxItems: 100
       required:
       - tickets
     OrderRead:

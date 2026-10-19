@@ -11,13 +11,20 @@ as a separate application.
 - Email registration and login with JWT access/refresh tokens.
 - Session login for the browsable API and an email-based Django admin.
 - Staff manage airports, routes, airplane types, airplanes, crews and flights.
+- Airport names and directed route pairs are unique in the database. Airport
+  and crew names are trimmed and cannot consist only of whitespace.
 - Authenticated passengers search flights and view available/taken seats.
 - Personal orders with multiple tickets; users only see their own orders.
 - Atomic reservations: either every requested ticket is booked or none is.
+- Orders accept 1–100 tickets, controlled by `MAX_TICKETS_PER_ORDER`.
 - Database uniqueness and PostgreSQL row locks protect seats from double booking.
 - Seat bounds and departure times are checked when booking.
-- Schedule validation prevents overlapping use of an airplane or crew member.
-- Booked flight routes, aircraft and times, and aircraft seating layouts are protected.
+- PostgreSQL excludes overlapping flight times for the same airplane even for
+  direct database writes. Crew scheduling uses shared resource locks and
+  schedule validation in the API and admin.
+- Booked flight routes, aircraft and times, and aircraft types and seating
+  layouts are protected. Users with bookings can be deactivated; their
+  accounts cannot be deleted while orders reference them.
 - Staff-only airplane image uploads, validated as images, up to 5 MiB.
 - OpenAPI schema, Swagger UI, ReDoc, pagination and request throttling.
 - Docker Compose with PostgreSQL, persistent media/static/database volumes,
@@ -31,7 +38,9 @@ as a separate application.
 The [editable draw.io source](docs/database-diagram.drawio) can be opened at
 [diagrams.net](https://app.diagrams.net/). `Flight.crew` is a many-to-many
 relationship with a join table managed by Django. All datetimes are timezone
-aware and stored in UTC.
+aware and stored in UTC. PostgreSQL migrations install `btree_gist` for the
+airplane overlap exclusion constraint; the database role needs permission to
+install this trusted extension.
 
 ## Run with Docker
 
@@ -75,9 +84,10 @@ docker compose exec app python manage.py createsuperuser
 The application waits for PostgreSQL, runs migrations and collects static files
 at startup. By default it listens on port **8001**, leaving an existing Cinema
 API on port 8000 available. `--wait` waits for the application health check before
-the next command runs. Change `APP_PORT` in `.env` if needed. Compose
-selects PostgreSQL automatically, even though the example `.env` uses SQLite
-for optional local Python development.
+the next command runs. Change `APP_PORT` in `.env` if needed. PostgreSQL is
+the default database in both the application and example environment; Compose
+always selects PostgreSQL. Both services restart unless explicitly stopped,
+have health checks, and are limited to one CPU and 512 MiB of memory each.
 
 | Page | URL |
 | --- | --- |
@@ -104,8 +114,13 @@ only when you intend to remove this project's database, static and media data.
 
 ## Run locally with Python
 
-Python **3.10** is used in Docker and CI. After copying/editing `.env`, keep
-`DB_ENGINE=sqlite` for a quick local start:
+Python **3.10** is used in Docker and CI. For local PostgreSQL, create a database
+and user, set the connection details in `.env`, and use
+`POSTGRES_HOST=127.0.0.1`. The Docker service name `db` is only resolvable inside
+the Compose network.
+
+For a lightweight local demonstration, explicitly set both `DB_ENGINE=sqlite`
+and `DJANGO_DEBUG=True` before running these commands:
 
 ```powershell
 py -3.10 -m venv .venv
@@ -119,11 +134,20 @@ python manage.py runserver 8001
 
 On Linux/macOS, use `python3.10 -m venv .venv` and `source .venv/bin/activate`,
 then run the same Python commands. The application loads `.env` automatically.
-To use a local PostgreSQL installation, set `DB_ENGINE=postgres` and supply its
-connection details, using `POSTGRES_HOST=127.0.0.1` rather than Docker's `db`.
+SQLite is limited to explicit debug development. Starting it with
+`DJANGO_DEBUG=False` fails with a configuration error, and unknown `DB_ENGINE`
+values also fail. Concurrent booking and PostgreSQL-specific database
+constraints must be verified on PostgreSQL.
 
-SQLite is useful for exploration; verify concurrent bookings on PostgreSQL,
-which supports the row locks used by the reservation service.
+### Updating an existing installation
+
+Rebuild and restart with `docker compose up --build -d --wait`; startup applies
+the new migrations. Before adding catalogue constraints, the migration checks
+for duplicate airport names, duplicate routes and whitespace names. If it
+finds conflicts, it stops and lists the records requiring review. Resolve those
+records explicitly and rerun migrations; no bookings are deleted or relinked
+automatically. Existing overlapping airplane schedules must also be corrected
+before PostgreSQL can install the overlap constraint.
 
 ## Authentication and booking walkthrough
 
@@ -175,6 +199,14 @@ not leave a partial order. Authentication failures give **401**; passengers
 attempting staff actions receive **403**. Unavailable objects and other users'
 orders return **404**.
 
+An order contains **1 to 100 tickets**, for passengers and staff alike. The
+project setting `MAX_TICKETS_PER_ORDER` defines this maximum and the OpenAPI
+schema displays it. Different seats on one flight and tickets for several
+flights are supported. A repeated `(flight, row, seat)` is rejected before
+reservation locks are acquired; availability is checked again while locked.
+Unexpected database failures are logged and propagate as server errors rather
+than being reported as occupied seats.
+
 5. View your orders and renew an expired access token:
 
 ```sh
@@ -221,7 +253,15 @@ payment, refunds and cancellations are outside this project's scope.
 `date` is a departure date in **UTC**, formatted `YYYY-MM-DD`. Invalid filter
 values return **400** with a field error. Flight lists include available seat
 counts; detail responses include nested route, airplane, crew and taken seats.
-Use `ordering=departure_time` (default) or `ordering=-departure_time`.
+Use `ordering=departure_time` (default) or `ordering=-departure_time`. Equal
+departure times are ordered by ascending ID. `available=true` selects flights
+with at least one free seat; `available=false` selects full flights. Omitting
+`available` returns both. Unknown airport IDs return an empty list.
+
+Filters accept one value per supported parameter. Repeating a supported filter,
+even with the same value, returns **400** instead of silently choosing a value.
+Unknown query parameters are ignored by the filter validator; pagination
+parameters are handled separately by pagination.
 
 ### Staff image upload
 
@@ -231,9 +271,12 @@ curl -X POST http://127.0.0.1:8001/api/airport/airplanes/1/upload-image/ \
   -F 'image=@airplane.jpg'
 ```
 
-This endpoint accepts a real image in multipart form. It validates content and
-size, gives stored files unique names, and returns the image URL. Normal JSON
-airplane updates do not accept uploaded files.
+This endpoint accepts a real image in multipart form. A shared model validator
+checks content and the **5 MiB** limit for API, admin and model writes, including
+direct file saves. The stored name is a UUID plus an extension detected by
+Pillow from the actual image content; a PNG named `.jpg` is stored as `.png`.
+The response includes the image URL. Normal JSON airplane updates do not accept
+uploaded files.
 
 ## Verification
 
@@ -245,6 +288,13 @@ docker compose run --rm app python manage.py makemigrations --check --dry-run
 docker compose run --rm app python manage.py spectacular --validate --fail-on-warn
 docker compose run --rm app flake8
 ```
+
+| Command | Expected result |
+| --- | --- |
+| `test --settings=config.test_settings --noinput` | All tests finish with `OK`; PostgreSQL runs the concurrency and exclusion-constraint checks. Django creates and removes a separate test database. |
+| `makemigrations --check --dry-run` | `No changes detected`, exit code 0; the model definitions match committed migrations. This does not apply migrations. |
+| `spectacular --validate --fail-on-warn` | A valid OpenAPI schema and exit code 0, with no warnings or schema errors. |
+| `flake8` | No diagnostic output and exit code 0. |
 
 For fast local SQLite tests:
 
@@ -259,6 +309,9 @@ rate limits (30 anonymous / 120 authenticated requests per minute). CI executes
 the tests against PostgreSQL, checks code style, migration consistency and
 OpenAPI validity. Throttling uses Django's local-memory cache for this single
 development process; multiple production workers need a shared cache.
+
+The mentor feedback and its regression checks are mapped in
+[the review remediation record](docs/mentor-fixes.md).
 
 ## API screenshots
 
