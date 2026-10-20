@@ -1,0 +1,62 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mxfile host="app.diagrams.net">
+  <diagram name="Airport API">
+    <mxGraphModel dx="1420" dy="1020" grid="1" page="1" pageWidth="1420" pageHeight="1020">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="airport" value="&lt;b&gt;Airport&lt;/b&gt;&lt;br&gt;&lt;br&gt;PK  id: bigint&lt;br&gt;name: unique varchar(255)&lt;br&gt;closest_big_city: varchar(255)" vertex="1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=14;fillColor=#ffffff;strokeColor=#64748b;fontSize=15;">
+          <mxGeometry x="50" y="140" width="245" height="144" as="geometry" />
+        </mxCell>
+        <mxCell id="route" value="&lt;b&gt;Route&lt;/b&gt;&lt;br&gt;&lt;br&gt;PK  id: bigint&lt;br&gt;FK  source_id: Airport&lt;br&gt;FK  destination_id: Airport&lt;br&gt;distance: positive integer&lt;br&gt;CHECK source != destination&lt;br&gt;UNIQUE (source, destination)" vertex="1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=14;fillColor=#ffffff;strokeColor=#64748b;fontSize=15;">
+          <mxGeometry x="390" y="140" width="250" height="228" as="geometry" />
+        </mxCell>
+        <mxCell id="crew" value="&lt;b&gt;Crew&lt;/b&gt;&lt;br&gt;&lt;br&gt;PK  id: bigint&lt;br&gt;first_name: varchar(255)&lt;br&gt;last_name: varchar(255)" vertex="1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=14;fillColor=#ffffff;strokeColor=#64748b;fontSize=15;">
+          <mxGeometry x="730" y="30" width="270" height="144" as="geometry" />
+        </mxCell>
+        <mxCell id="flight" value="&lt;b&gt;Flight&lt;/b&gt;&lt;br&gt;&lt;br&gt;PK  id: bigint&lt;br&gt;FK  route_id: Route&lt;br&gt;FK  airplane_id: Airplane&lt;br&gt;departure_time: timestamptz&lt;br&gt;arrival_time: timestamptz&lt;br&gt;M:N crew via flight_crew&lt;br&gt;CHECK arrival &amp;gt; departure&lt;br&gt;PG: no airplane overlaps" vertex="1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=14;fillColor=#ffffff;strokeColor=#64748b;fontSize=15;">
+          <mxGeometry x="730" y="290" width="270" height="284" as="geometry" />
+        </mxCell>
+        <mxCell id="airplane" value="&lt;b&gt;Airplane&lt;/b&gt;&lt;br&gt;&lt;br&gt;PK  id: bigint&lt;br&gt;name: varchar(255)&lt;br&gt;rows: positive integer&lt;br&gt;seats_in_row: positive integer&lt;br&gt;FK  airplane_type_id: AirplaneType&lt;br&gt;image: optional file path" vertex="1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=14;fillColor=#ffffff;strokeColor=#64748b;fontSize=15;">
+          <mxGeometry x="1090" y="130" width="270" height="228" as="geometry" />
+        </mxCell>
+        <mxCell id="airplanetype" value="&lt;b&gt;AirplaneType&lt;/b&gt;&lt;br&gt;&lt;br&gt;PK  id: bigint&lt;br&gt;name: unique varchar(255)" vertex="1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=14;fillColor=#ffffff;strokeColor=#64748b;fontSize=15;">
+          <mxGeometry x="1090" y="470" width="270" height="116" as="geometry" />
+        </mxCell>
+        <mxCell id="user" value="&lt;b&gt;User&lt;/b&gt;&lt;br&gt;&lt;br&gt;PK  id: bigint&lt;br&gt;email: unique email&lt;br&gt;password: hashed&lt;br&gt;is_staff, is_active, ..." vertex="1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=14;fillColor=#ffffff;strokeColor=#64748b;fontSize=15;">
+          <mxGeometry x="50" y="700" width="245" height="172" as="geometry" />
+        </mxCell>
+        <mxCell id="order" value="&lt;b&gt;Order&lt;/b&gt;&lt;br&gt;&lt;br&gt;PK  id: bigint&lt;br&gt;FK  user_id: User (PROTECT)&lt;br&gt;created_at: timestamptz" vertex="1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=14;fillColor=#ffffff;strokeColor=#64748b;fontSize=15;">
+          <mxGeometry x="390" y="700" width="250" height="144" as="geometry" />
+        </mxCell>
+        <mxCell id="ticket" value="&lt;b&gt;Ticket&lt;/b&gt;&lt;br&gt;&lt;br&gt;PK  id: bigint&lt;br&gt;FK  order_id: Order&lt;br&gt;FK  flight_id: Flight&lt;br&gt;row, seat: positive integer&lt;br&gt;UNIQUE (flight_id, row, seat)" vertex="1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=14;fillColor=#ffffff;strokeColor=#64748b;fontSize=15;">
+          <mxGeometry x="730" y="700" width="270" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="e0" value="1 : many" edge="1" parent="1" source="airport" target="route" style="edgeStyle=orthogonalEdgeStyle;html=1;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" value="1 : many" edge="1" parent="1" source="route" target="flight" style="edgeStyle=orthogonalEdgeStyle;html=1;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" value="many : many" edge="1" parent="1" source="crew" target="flight" style="edgeStyle=orthogonalEdgeStyle;html=1;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" value="1 : many" edge="1" parent="1" source="airplane" target="flight" style="edgeStyle=orthogonalEdgeStyle;html=1;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" value="1 : many" edge="1" parent="1" source="airplanetype" target="airplane" style="edgeStyle=orthogonalEdgeStyle;html=1;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" value="1 : many" edge="1" parent="1" source="user" target="order" style="edgeStyle=orthogonalEdgeStyle;html=1;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" value="1 : many" edge="1" parent="1" source="order" target="ticket" style="edgeStyle=orthogonalEdgeStyle;html=1;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" value="1 : many" edge="1" parent="1" source="flight" target="ticket" style="edgeStyle=orthogonalEdgeStyle;html=1;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
