@@ -6,6 +6,28 @@ using the completed [Cinema API](https://github.com/makar111111/py-dockerize-cin
 as a learning reference. The airport domain and booking rules are implemented
 as a separate application.
 
+## Quick start
+
+Start Docker Desktop (or Docker Engine with Compose), then:
+
+```sh
+git clone --branch develop https://github.com/makar111111/airport-api.git
+cd airport-api
+cp .env.example .env
+```
+
+In PowerShell, use `Copy-Item .env.example .env` for the copy step.
+Set your own `DJANGO_SECRET_KEY` and `POSTGRES_PASSWORD` in `.env`, then run:
+
+```sh
+docker compose up --build -d --wait
+```
+
+Open [Swagger UI](http://127.0.0.1:8001/api/doc/swagger/).
+Sample data and a staff account are optional; see [Run with Docker](#run-with-docker)
+for those commands and [Authentication and booking walkthrough](#authentication-and-booking-walkthrough)
+to start using protected endpoints.
+
 ## Features
 
 - Email registration and login with JWT access/refresh tokens.
@@ -310,8 +332,8 @@ the tests against PostgreSQL, checks code style, migration consistency and
 OpenAPI validity. Throttling uses Django's local-memory cache for this single
 development process; multiple production workers need a shared cache.
 
-The mentor feedback and its regression checks are mapped in
-[the review remediation record](docs/mentor-fixes.md).
+See [Testing](docs/testing.md) for coverage and verification commands, and
+[Architecture](docs/architecture.md) for application boundaries and data integrity.
 
 ## API screenshots
 
@@ -325,7 +347,7 @@ The mentor feedback and its regression checks are mapped in
 airport/       Models, catalogue API, reservations, management commands, tests
 user/          Email accounts, JWT, account API, admin forms and tests
 config/        Django settings, URL routing and entry points
-docs/          Database diagram, API screenshots and implementation checklist
+docs/          Architecture, testing guide, OpenAPI schema, diagram and screenshots
 ```
 
 The Docker configuration runs Django's development server and serves media for
